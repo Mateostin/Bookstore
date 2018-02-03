@@ -42,6 +42,29 @@ $(function () {
         })
     })
 
+    // DISCOVERING BOOK FROM AUTHOR ON CLICK
+    $('#authorsList').on('click', '.btn-author-books', function () {
+        $('.authorBooksList li').remove()
+        $('.authorBooksList').css('display', 'none')
+        var authorID = $(this).data('id')
+        let $ul = $('.authorBooksList').css('display', 'none')
+        let $liBooks = $('<li>', {class: 'author-books'})
+
+        $.get('http://localhost/Bookstore/rest/rest.php/author/' + authorID)
+            .done(function (data) {
+                if (data.success && data.success.length > 0) {
+                    data.success.forEach(function (elm) {
+                        elm.books.forEach(function (book) {
+                            $liBooks.text(book.title)
+                            $ul.append($liBooks)
+
+                        })
+                    })
+                }
+            })
+        $(this).parent().parent().find('.authorBooksList').toggle()
+    })
+
     // GET SELECTED OPTION FOR EDITING BOOK
     $('#authorEditSelect').on('change', function () {
         var authorID = $(this).val()
@@ -102,12 +125,15 @@ let createNewAuthor = (author) => {
     let $heading = $('<div>', {class: 'panel-heading'})
     let $authorName = $('<span>', {class: 'authorTitle'})
     let $buttonRemove = $('<button class="btn btn-danger pull-right btn-xs btn-author-remove"><i class="fa fa-trash"></i></button>')
+    let $buttonShowBooks = $('<button class="btn btn-primary pull-right btn-xs btn-author-books"><i class="fa fa-book"></i></button>')
+    let $authorBooks = $('<ul>', {class: 'authorBooksList'})
 
     $authorName.text(author.name + " " + author.surname)
     $buttonRemove.attr('data-id', author.id)
+    $buttonShowBooks.attr('data-id', author.id)
 
-    $heading.append($authorName).append($buttonRemove)
-    $panel.append($heading)
+    $heading.append($authorName).append($buttonRemove).append($buttonShowBooks)
+    $panel.append($heading).append($authorBooks)
     $li.append($panel)
     $authorsList.append($li)
 

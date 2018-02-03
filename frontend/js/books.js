@@ -59,7 +59,8 @@ $(function () {
                         data.success.forEach(function (elm) {
                             $('#bookEdit').children().eq(0).attr('value', elm.id)
                             $('#bookEdit').children().eq(2).find('#title').val(elm.title)
-                            $('#bookEdit').children().eq(3).find('#description').val(elm.description)
+                            $('#author_id_edit').find('option[value="' + elm.author['id'] + '"]').attr("selected", "selected")
+                            $('#bookEdit').children().eq(4).find('#description').val(elm.description)
                         })
                     }
                 })
@@ -83,7 +84,7 @@ $(function () {
                         $('#bookEdit').css('display', 'none')
                         data.success.forEach(function (elm) {
                             $('#bookEditSelect').find('option[value="' + elm.id + '"]').attr("selected", "selected").text(elm.title)
-                            $('div').find('button[data-id="' + elm.id + '"]').eq(0).parent().find('span').text(elm.title)
+                            $('div').find('button[data-id="' + elm.id + '"]').eq(0).parent().find('span').text(elm.title + " (" + elm.author['name'] + " " + elm.author['surname'] + ")")
                         })
                         showModal("Edycja przebiegła pomyślnie!");
                     }
@@ -110,7 +111,7 @@ let createNewBook = (book) => {
     let $buttonShowDescription = $('<button class="btn btn-primary pull-right btn-xs btn-book-show-description"><i class="fa fa-info-circle"></i></button>')
     let $bookDescription = $('<span>', {class: 'panel-body book-description'})
 
-    $bookTitle.text(book.title)
+    $bookTitle.text(book.title + " (" + book.author['name'] + " " + book.author['surname'] + ")")
     $bookDescription.text(book.description)
     $buttonRemove.attr('data-id', book.id)
     $buttonShowDescription.attr('data-id', book.id)
@@ -121,9 +122,18 @@ let createNewBook = (book) => {
     $booksList.append($li)
 
     // ADD BOOKS IN SELECT FORM FOR EDIT
-    let $option = $('<option>', {value: book.id}).text(book.title)
+    let $optionBooks = $('<option>', {value: book.id}).text(book.title)
 
-    $('#bookEditSelect').append($option)
+    $('#bookEditSelect').append($optionBooks)
+
+    // ADD AUTHORS IN SELECT ADD FORM
+    let $optionAuthors = $('<option>', {value: book.author['id']}).text(book.author['name'] + " " + book.author['surname'])
+
+    $('#author_id').append($optionAuthors)
+
+    // ADD AUTHORS IN SELECT EDIT FORM
+    let $optionAuthorsEdit = $('<option>', {value: book.author['id']}).text(book.author['name'] + " " + book.author['surname'])
+    $('#author_id_edit').append($optionAuthorsEdit)
 
 
 }
