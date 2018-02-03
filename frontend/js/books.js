@@ -1,6 +1,5 @@
 $(function () {
     var $bookAddForm = $('#bookAdd')
-
     // GET ALL BOOKS DISPLAY IN TABLE
     $.get('http://localhost/Bookstore/rest/rest.php/book')
         .done(function (data) {
@@ -11,15 +10,21 @@ $(function () {
             }
         })
 
+    // ADD NEW BOOK TO DATABASE FROM FORM
     $bookAddForm.on('submit', function (event) {
         event.preventDefault()
+        var titleToCheck = $('#bookAdd').children().eq(1).find('#title').val()
 
-        $.post('http://localhost/Bookstore/rest/rest.php/book', $(this).serialize())
-            .done(function (data) {
-                if (data.success && data.success.length > 0) {
-                    createNewBook(data.success[0])
-                }
-            })
+        if (!titleToCheck) {
+            showModal("Pole tytułu ksiązki nie moze być puste!");
+        } else {
+            $.post('http://localhost/Bookstore/rest/rest.php/book', $(this).serialize())
+                .done(function (data) {
+                    if (data.success && data.success.length > 0) {
+                        createNewBook(data.success[0])
+                    }
+                })
+        }
     })
 
     // DISCOVERING BOOK DESCRIPTION ON CLICK
@@ -45,41 +50,46 @@ $(function () {
     $('#bookEditSelect').on('change', function () {
         var bookID = $(this).val()
 
-        $.get('http://localhost/Bookstore/rest/rest.php/book/' + bookID)
-            .done(function (data) {
-                if (data.success && data.success.length > 0) {
-                    data.success.forEach(function (elm) {
-                        $('#bookEdit').children().eq(0).attr('value', elm.id)
-                        $('#bookEdit').children().eq(2).find('#title').val(elm.title)
-                        $('#bookEdit').children().eq(3).find('#description').val(elm.description)
-                    })
-                }
+        if (!bookID) {
+            $('#bookEdit').css('display', 'none')
+        } else {
+            $.get('http://localhost/Bookstore/rest/rest.php/book/' + bookID)
+                .done(function (data) {
+                    if (data.success && data.success.length > 0) {
+                        data.success.forEach(function (elm) {
+                            $('#bookEdit').children().eq(0).attr('value', elm.id)
+                            $('#bookEdit').children().eq(2).find('#title').val(elm.title)
+                            $('#bookEdit').children().eq(3).find('#description').val(elm.description)
+                        })
+                    }
+                })
+
+            $('#bookEdit').css('display', 'block')
+
+            // SAVE CHANGES
+            $('#bookEdit').find('button').on('click', function (event) {
+                event.preventDefault()
+
+                var idToChange = $('#bookEdit').children().eq(0).val()
+                var bookToEdit = $('#bookEdit').serialize()
+
+                $.ajax({
+                    url: "http://localhost/Bookstore/rest/rest.php/book/" + idToChange,
+                    type: "PATCH",
+                    data: bookToEdit
+
+                }).done(function (data) {
+                    if (data.success && data.success.length > 0) {
+                        $('#bookEdit').css('display', 'none')
+                        data.success.forEach(function (elm) {
+                            $('#bookEditSelect').find('option[value="' + elm.id + '"]').attr("selected", "selected").text(elm.title)
+                            $('div').find('button[data-id="' + elm.id + '"]').eq(0).parent().find('span').text(elm.title)
+                        })
+                        showModal("Edycja przebiegła pomyślnie!");
+                    }
+                })
             })
-
-        $('#bookEdit').css('display', 'block')
-
-        // SAVE CHANGES
-        $('#bookEdit').find('button').on('click', function (event) {
-            event.preventDefault()
-
-            var idToChange = $('#bookEdit').children().eq(0).val()
-            var bookToEdit = $('#bookEdit').serialize()
-
-            $.ajax({
-                url: "http://localhost/Bookstore/rest/rest.php/book/" + idToChange,
-                type: "PATCH",
-                data: bookToEdit
-
-            }).done(function (data) {
-                if (data.success && data.success.length > 0) {
-                    $('#bookEdit').css('display', 'none')
-                    data.success.forEach(function (elm) {
-                        $('#bookEditSelect').find('option[value="' + elm.id + '"]').attr("selected", "selected").text(elm.title)
-                        $('div').find('button[data-id="' + elm.id + '"]').eq(0).parent().find('span').text(elm.title)
-                    })
-                }
-            })
-        })
+        }
 
 
     })
